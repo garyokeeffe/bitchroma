@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment QR Code</title>
+</head>
+<body>
+    <h1>Scan the QR Code to make a payment</h1>
+    <img src="{{ url_for('static', filename='images/qr_code.png') }}" alt="QR Code" width="300" height="300">
+    <script>
+        // Function to check the payment status
+    // Function to check the payment status
+// Function to check the payment status
+        function checkPaymentStatus() {
+            // Send an AJAX request to the server
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/payment_status', true);
+
+            // Include the session cookie in the request headers
+            var sessionCookie = document.cookie.match(/session=([^;]+)/);
+            if (sessionCookie) {
+                xhr.setRequestHeader('Cookie', 'session=' + sessionCookie[1]);
+            }
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        console.log(xhr.responseText); // Log the response to inspect its structure
+
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+
+                            if (response.status === 'Payment not processed yet') {
+                                // Payment not settled yet, continue checking
+                                setTimeout(checkPaymentStatus, 500); // Check every 0.5 seconds
+                            } else {
+                                // Payment settled, redirect to payment status page
+                                window.location.href = '/payment_status';
+                            }
+                        } catch (error) {
+                            // Response is not valid JSON, handle it as a string
+                            if (xhr.responseText === 'Payment not processed yet') {
+                                // Payment not settled yet, continue checking
+                                setTimeout(checkPaymentStatus, 500); // Check every 0.5 seconds
+                            } else {
+                                console.error('Invalid response:', xhr.responseText);
+                                // Handle the error condition here
+                            }
+                        }
+                    } else {
+                        console.error('Error:', xhr.status, xhr.statusText);
+                        // Handle the error condition here
+                    }
+                }
+            };
+
+            xhr.send();
+        }
+
+        // Start checking payment status
+        setTimeout(checkPaymentStatus, 500); // Check every 0.5 seconds
+
+
+
+    </script>
+</body>
+</html>
